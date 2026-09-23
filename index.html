@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>우리의 순간</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 28px 18px;
+      background: #fff5f7;
+      color: #443139;
+      font-family: system-ui, sans-serif;
+    }
+
+    main {
+      max-width: 460px;
+      margin: 0 auto;
+    }
+
+    header { text-align: center; }
+    .heart { font-size: 42px; }
+    h1 { margin-bottom: 8px; }
+    p { line-height: 1.7; }
+
+    .card {
+      margin-top: 24px;
+      padding: 22px;
+      border-radius: 24px;
+      background: white;
+      box-shadow: 0 10px 35px #6d334014;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      font: inherit;
+    }
+
+    input::file-selector-button {
+      padding: 12px;
+      margin-right: 8px;
+      border: 0;
+      border-radius: 12px;
+      background: #ffe0e9;
+      color: #71374b;
+      cursor: pointer;
+    }
+
+    #viewer {
+      margin-top: 20px;
+      padding: 12px;
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      background: #fff7fa;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    img, video {
+      display: block;
+      width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    #status, .note {
+      color: #796870;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <header>
+      <div class="heart" aria-hidden="true">💗</div>
+      <h1>우리의 순간</h1>
+      <p>보고 싶은 순간, 꺼내 보는 우리.</p>
+    </header>
+
+    <section class="card">
+      <label for="media">사진이나 영상을 골라주세요</label>
+      <input id="media" type="file" accept="image/*,video/*">
+
+      <div id="viewer">
+        <p>선택한 사진이나 영상이 여기에 나타나요.</p>
+      </div>
+
+      <p id="status" role="status" aria-live="polite">
+        아직 선택한 파일이 없어요.
+      </p>
+    </section>
+
+    <p class="note">
+      미리보기 연습 화면이에요. 선택한 파일은 서버에 업로드되지
+      않으며, 새로고침하면 다시 선택해야 해요.
+    </p>
+  </main>
+
+  <script>
+    const picker = document.getElementById("media");
+    const viewer = document.getElementById("viewer");
+    const status = document.getElementById("status");
+    let previewUrl = null;
+
+    picker.addEventListener("change", () => {
+      const file = picker.files[0];
+      if (!file) return;
+
+      const isImage = file.type.startsWith("image/");
+      const isVideo = file.type.startsWith("video/");
+
+      if (!isImage && !isVideo) {
+        status.textContent = "사진 또는 영상 파일을 선택해주세요.";
+        return;
+      }
+
+      viewer.replaceChildren();
+
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+
+      previewUrl = URL.createObjectURL(file);
+      const media = document.createElement(isImage ? "img" : "video");
+
+      if (isImage) {
+        media.alt = "내가 선택한 사진";
+      } else {
+        media.controls = true;
+        media.playsInline = true;
+        media.preload = "metadata";
+      }
+
+      media.addEventListener("error", () => {
+        status.textContent =
+          "이 파일을 표시할 수 없어요. JPG 사진이나 다른 MP4 영상으로 시도해보세요.";
+      });
+
+      media.src = previewUrl;
+      viewer.appendChild(media);
+      status.textContent = "현재 휴대폰에서만 미리보기 중이에요.";
+    });
+  </script>
+</body>
+</html>
