@@ -1,157 +1,68 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#f7efea">
   <title>우리의 순간</title>
-
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2"></script>
+  <script defer src="./config.js"></script>
+  <script defer src="./app.js"></script>
   <style>
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      padding: 28px 18px;
-      background: #fff5f7;
-      color: #443139;
-      font-family: system-ui, sans-serif;
-    }
-
-    main {
-      max-width: 460px;
-      margin: 0 auto;
-    }
-
-    header { text-align: center; }
-    .heart { font-size: 42px; }
-    h1 { margin-bottom: 8px; }
-    p { line-height: 1.7; }
-
-    .card {
-      margin-top: 24px;
-      padding: 22px;
-      border-radius: 24px;
-      background: white;
-      box-shadow: 0 10px 35px #6d334014;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 12px;
-      font-weight: bold;
-    }
-
-    input {
-      width: 100%;
-      font: inherit;
-    }
-
-    input::file-selector-button {
-      padding: 12px;
-      margin-right: 8px;
-      border: 0;
-      border-radius: 12px;
-      background: #ffe0e9;
-      color: #71374b;
-      cursor: pointer;
-    }
-
-    #viewer {
-      margin-top: 20px;
-      padding: 12px;
-      min-height: 220px;
-      display: grid;
-      place-items: center;
-      background: #fff7fa;
-      border-radius: 18px;
-      overflow: hidden;
-    }
-
-    img, video {
-      display: block;
-      width: 100%;
-      max-height: 60vh;
-      object-fit: contain;
-      border-radius: 12px;
-    }
-
-    #status, .note {
-      color: #796870;
-      font-size: 14px;
-    }
+    :root{color-scheme:light;--ink:#392e33;--muted:#756770;--rose:#92546b;--line:#e8dce0}
+    *{box-sizing:border-box}body{margin:0;background:#f7efea;color:var(--ink);font-family:system-ui,-apple-system,sans-serif}
+    main{max-width:720px;margin:auto;padding:32px 18px 80px}header{text-align:center;margin:18px 0 26px}
+    .eyebrow{letter-spacing:.22em;font-size:11px;color:var(--rose);font-weight:700}h1{font-size:34px;letter-spacing:-.06em;margin:10px 0}h2{font-size:20px;margin-top:0}p{line-height:1.7}
+    .panel{background:#fffdfa;border:1px solid var(--line);border-radius:24px;padding:22px;margin:18px 0;box-shadow:0 10px 40px #62445008}
+    label{display:block;font-size:14px;font-weight:650;margin:14px 0 7px}input,textarea,select{width:100%;padding:13px;border:1px solid #cbbbc1;border-radius:12px;font:inherit;background:white;color:var(--ink)}
+    button{min-height:46px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);font:inherit;cursor:pointer}
+    button.primary{background:var(--rose);color:white;border-color:var(--rose)}button.danger{color:#ac2943}button:disabled{opacity:.45;cursor:wait}
+    .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.row>*{flex:1}.small{font-size:13px;color:var(--muted)}.muted{color:var(--muted)}
+    #status{position:sticky;top:8px;z-index:10;border-radius:12px;padding:12px 14px;background:#f1e4eb;white-space:pre-wrap;font-size:14px}#status:empty{display:none}#status.error{background:#ffe5e8;color:#8d1934}
+    #viewer{display:grid;place-items:center;min-height:240px;background:#f3e8e8;border-radius:18px;overflow:hidden}#viewer img,#viewer video{width:100%;max-height:65vh;object-fit:contain;display:block}
+    #caption,#note{white-space:pre-wrap;overflow-wrap:anywhere}#counter{text-align:center;min-width:80px}#list{display:grid;gap:9px;margin-top:15px}.item{text-align:left;width:100%;overflow-wrap:anywhere}.item.active{border:2px solid var(--rose);background:#fcf1f4}.item strong,.item small{display:block}.item small{margin-top:6px;color:var(--muted)}
+    summary{cursor:pointer;font-weight:650;min-height:28px}hr{border:0;border-top:1px solid var(--line);margin:24px 0}[hidden]{display:none!important}a{color:var(--rose)}
+    @media(max-width:400px){main{padding-inline:12px}.panel{padding:16px}button{font-size:14px}}
   </style>
 </head>
-
-<body>
-  <main>
-    <header>
-      <div class="heart" aria-hidden="true">💗</div>
-      <h1>우리의 순간</h1>
-      <p>보고 싶은 순간, 꺼내 보는 우리.</p>
-    </header>
-
-    <section class="card">
-      <label for="media">사진이나 영상을 골라주세요</label>
-      <input id="media" type="file" accept="image/*,video/*">
-
-      <div id="viewer">
-        <p>선택한 사진이나 영상이 여기에 나타나요.</p>
-      </div>
-
-      <p id="status" role="status" aria-live="polite">
-        아직 선택한 파일이 없어요.
-      </p>
+<body><main>
+  <div style="display:flex;justify-content:flex-end"><label for="language" class="small" style="margin-right:12px" data-i18n="language">언어 / Idioma</label><select id="language" style="width:auto" aria-label="Language / Idioma / 언어"><option value="ko">한국어</option><option value="pt-BR">Português (Brasil)</option></select></div>
+  <header><div class="eyebrow" data-i18n="eyebrow">둘만의 작은 공간</div><h1 id="title">우리의 순간</h1><p id="note" class="muted" data-i18n="tagline">둘만의 사진과 이야기를 담는 곳.</p><p id="days" class="small"></p></header>
+  <div id="status" role="status" aria-live="polite" data-i18n="connecting">연결 중이에요…</div>
+  <section id="loginPanel" class="panel" hidden>
+    <h2 data-i18n="loginTitle">우리 앨범에 들어가기</h2><p class="small" data-i18n="loginHint">등록된 두 사람의 계정으로 로그인해주세요. GitHub 계정은 필요 없어요.</p>
+    <form id="loginForm"><label for="email" data-i18n="email">이메일</label><input id="email" type="email" autocomplete="username" required>
+      <label for="password" data-i18n="password">비밀번호</label><input id="password" type="password" autocomplete="current-password" required>
+      <label><input id="remember" type="checkbox" checked style="width:auto"> <span data-i18n="remember">이 휴대폰에서 로그인 유지</span></label>
+      <button class="primary" type="submit" style="width:100%;margin-top:12px" data-i18n="openAlbum">앨범 열기</button></form>
+    <p class="small" data-i18n="forgot">비밀번호를 잊었다면 앨범 관리자에게 재설정을 요청하세요.</p>
+  </section>
+  <section id="denied" class="panel" hidden><h2 data-i18n="deniedTitle">앨범 권한이 없어요</h2><p data-i18n="deniedHint">로그인은 되었지만 이 앨범에 등록된 계정이 아니에요.</p><button id="deniedLogout" data-i18n="otherAccount">다른 계정으로 로그인</button></section>
+  <section id="album" hidden>
+    <p id="syncStatus" class="small" aria-live="polite"></p><p class="small" data-i18n="autoSync">앱을 보는 동안 약 15초마다 공동 앨범을 확인해요.</p>
+    <div class="row"><span id="who" class="small"></span><button id="logout" data-i18n="logout">로그아웃</button></div>
+    <section class="panel"><div id="viewer"><p data-i18n="empty">첫 번째 추억을 올려보세요.</p></div><p id="caption"></p>
+      <div class="row"><button id="prev" data-i18n-aria="previous" aria-label="이전 사진 또는 영상" data-i18n="previous">← 이전</button><span id="counter">0 / 0</span><button id="next" data-i18n-aria="next" aria-label="다음 사진 또는 영상" data-i18n="next">다음 →</button></div>
+      <div class="row" style="margin-top:12px"><button id="cover" data-i18n="cover">첫 화면으로 지정</button><button id="editCaption" data-i18n="editCaption">설명 수정</button><button id="delete" class="danger" data-i18n="delete">삭제</button></div>
     </section>
-
-    <p class="note">
-      미리보기 연습 화면이에요. 선택한 파일은 서버에 업로드되지
-      않으며, 새로고침하면 다시 선택해야 해요.
-    </p>
-  </main>
-
-  <script>
-    const picker = document.getElementById("media");
-    const viewer = document.getElementById("viewer");
-    const status = document.getElementById("status");
-    let previewUrl = null;
-
-    picker.addEventListener("change", () => {
-      const file = picker.files[0];
-      if (!file) return;
-
-      const isImage = file.type.startsWith("image/");
-      const isVideo = file.type.startsWith("video/");
-
-      if (!isImage && !isVideo) {
-        status.textContent = "사진 또는 영상 파일을 선택해주세요.";
-        return;
-      }
-
-      viewer.replaceChildren();
-
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-
-      previewUrl = URL.createObjectURL(file);
-      const media = document.createElement(isImage ? "img" : "video");
-
-      if (isImage) {
-        media.alt = "내가 선택한 사진";
-      } else {
-        media.controls = true;
-        media.playsInline = true;
-        media.preload = "metadata";
-      }
-
-      media.addEventListener("error", () => {
-        status.textContent =
-          "이 파일을 표시할 수 없어요. JPG 사진이나 다른 MP4 영상으로 시도해보세요.";
-      });
-
-      media.src = previewUrl;
-      viewer.appendChild(media);
-      status.textContent = "현재 휴대폰에서만 미리보기 중이에요.";
-    });
-  </script>
-</body>
-</html>
+    <section class="panel"><h2 data-i18n="uploadTitle">추억 추가</h2><form id="uploadForm">
+      <label for="files" data-i18n="files">사진·영상 선택 (여러 개 가능)</label><input id="files" type="file" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" multiple required>
+      <label for="uploadCaption" data-i18n="captionLabel">함께 남길 말</label><input id="uploadCaption" maxlength="300" placeholder="이날 정말 행복했어" data-i18n-placeholder="captionPlaceholder">
+      <p class="small" data-i18n="fileHint">파일당 최대 40MB · JPG, PNG, WebP, GIF, MP4, WebM. 영상은 재생 버튼을 눌러 보세요.</p>
+      <button type="submit" class="primary" data-i18n="uploadButton">앨범에 저장</button></form></section>
+    <section class="panel"><div class="row"><h2 style="margin:0" data-i18n="records">우리의 기록</h2><button id="refresh" data-i18n="refresh">새로고침</button></div>
+      <label for="filter" data-i18n="filter">종류</label><select id="filter"><option value="all" data-i18n="all">전체</option><option value="image" data-i18n="images">사진</option><option value="video" data-i18n="videos">영상</option></select>
+      <div id="list"></div><button id="more" hidden style="margin-top:14px;width:100%" data-i18n="more">이전 기록 더 보기</button></section>
+    <details class="panel"><summary data-i18n="settings">앨범 꾸미기 · 연결 주소</summary><form id="settingsForm">
+      <label for="titleInput" data-i18n="albumName">앨범 이름 (비우면 기본 제목)</label><input id="titleInput" maxlength="60">
+      <p class="small" data-i18n="editedByBoth">편지·설명은 입력한 원문 그대로 공유됩니다.</p><label for="noteInput" data-i18n="letter">편지</label><textarea id="noteInput" rows="4" maxlength="1000"></textarea>
+      <label for="dateInput" data-i18n="date">함께하기 시작한 날</label><input id="dateInput" type="date">
+      <button class="primary" type="submit" style="margin-top:15px" data-i18n="settingsSave">설정 저장</button></form><hr>
+      <p class="small" data-i18n="linkHint">NFC 카드가 생기면 아래 주소를 카드에 기록하세요.</p><input id="albumUrl" readonly data-i18n-aria="link" aria-label="NFC에 저장할 앨범 주소"><button id="copy" style="margin-top:10px" data-i18n="copy">주소 복사</button>
+      <hr><form id="passwordForm"><label for="newPassword" data-i18n="newPassword">내 비밀번호 변경</label><input id="newPassword" type="password" autocomplete="new-password" minlength="12" required><p class="small" data-i18n="passwordHint">12자 이상으로 입력하세요.</p><button type="submit" data-i18n="passwordButton">비밀번호 변경</button></form>
+    </details>
+    <p class="small" style="text-align:center" data-i18n="footer">하나의 공동 앨범 · 둘 다 추가·수정·삭제할 수 있어요.</p>
+  </section>
+  <noscript>이 앨범을 사용하려면 브라우저의 JavaScript를 켜주세요.</noscript>
+</main></body></html>
